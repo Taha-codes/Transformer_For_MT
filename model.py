@@ -68,3 +68,24 @@ class FeedForwardBlock(nn.Module): # the dimensions of this FF are: d_model -> d
     def forward(self, x):
         # (batch, seq_len, d_model) --> (batch, seq_len, d_ff) --> (batch, seq_len, d_model)
         return self.linear2(self.dropout(torch.relu(self.linear_1(x))))
+
+class MultiHeadAttentionBlock(nn.Module):
+    def __init__(self, d_model: int, dropout: float, h: int):
+        super().__init__()
+        self.d_model = d_model
+        self.dropout = nn.Droupout(dropout)
+        self.h = h
+
+        assert d_model % h == 0, "d_model must be divisible by the number of heads"
+
+        self.d_k = d_model // h
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)
+        self.w_v = nn.Linear(d_model, d_model)
+        self.w_o = nn.Linear(d_model, d_model)
+
+    def forward(self, q, k, v, mask):
+        query = self.w_q(q)
+        key = self.w_k(k)
+        value = self.w_v(v)
+        
